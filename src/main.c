@@ -15,7 +15,7 @@ typedef struct {
 } ValueNode;
 
 typedef struct NODE {
-    char name[80];
+    char name[TOKEN_LEN];
     int quantity;
     int node_type; // 0 for Composite, 1 for ValueNode
     union {
@@ -33,7 +33,17 @@ int main() {
         printf("> ");
         fgets(line, sizeof(line), stdin);
         line[strlen(line)-1] = '\0';
-        tokenize_input(line);
+        remove_spaces(line);
+
+        // DEBUG
+        if (strcmp(line, "quit") == 0)
+            break;
+
+        TokenArray input_tokens = tokenize_input(line);
+        for (int i = 0; i < input_tokens.num_tokens; ++i) {
+            StringView curr_token = input_tokens.tokens[i];
+            printf("%.*s\n", curr_token.len, curr_token.data);
+        }
     }
 
     return 0;

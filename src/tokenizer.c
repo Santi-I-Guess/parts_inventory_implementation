@@ -3,10 +3,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "tokenizer.h"
+
 // removes spaces, writes to input
-void remove_spaces(char input[80]) {
+void remove_spaces(char input[TOKEN_LEN]) {
     size_t stripped_idx = 0;
-    char stripped_input[80] = "";
+    char stripped_input[TOKEN_LEN] = "";
 
     size_t original_len = strlen(input);
     for (size_t i = 0; i < original_len; ++i) {
@@ -22,42 +24,50 @@ void remove_spaces(char input[80]) {
     strcpy(input, stripped_input);
 }
 
-// for now, just finds the token and prints it on newline
-void tokenize_input(const char input[80]) {
-    char input_copy[80] = "";
-    strcpy(input_copy, input);
-    remove_spaces(input_copy);
+// since input can be a float, allow periods as well
+int is_number_part(int c) {
+    return isdigit(c) || c == '.';
+}
+
+// tarray = token_array
+void append_tarray(
+    TokenArray *token_array,
+    StringView token
+) {
+    token_array->tokens[token_array->num_tokens] = token;
+    token_array->num_tokens++;
+}
+
+TokenArray tokenize_input(const char input[TOKEN_LEN]) {
+    TokenArray token_array = {0};
 
     size_t input_idx = 0;
     size_t input_len = strlen(input);
     while (input_idx < input_len) {
-        size_t token_idx = 0;
-        char token[80] = "";
-        char curr_char = input_copy[input_idx];
+        char curr_char = input[input_idx];
         if (curr_char == '*' || curr_char == '+') {
-            // DEBUG
-            printf("%c\n", curr_char);
+            StringView token = { .data = &input[input_idx], .len = 1 };
+            append_tarray(&token_array, token);
             input_idx++;
             continue;
         }
 
         int (*is_func)(int) = &isalpha;
-        if (isdigit(curr_char))
-            is_func = &isdigit;
+        if (is_number_part(curr_char))
+            is_func = &is_number_part;
 
-        while (is_func(input_copy[input_idx+token_idx])) {
-            token[token_idx] = input_copy[input_idx+token_idx];
-            token_idx++;
+        size_t token_len = 0;
+        while (is_func(input[input_idx+token_len])) {
+            token_len++;
         }
-        switch (token_idx) {
-            case 0:
-                input_idx += 1;
-                break;
-            default:
-                // DEBUG
-                printf("%s\n", token);
-                input_idx += token_idx;
-                break;
+
+        if (token_len == 0) {
+            input_idx += 1;
+        } else {
+            StringView token = { .data = &input[input_idx], .len = token_len };
+            append_tarray(&token_array, token);
+            input_idx += token_len;
         }
     }
+    return token_array;
 }
