@@ -1,27 +1,7 @@
 #include <ctype.h>
-#include <stdbool.h>
-#include <stdio.h>
+#include <stdio.h> // DEBUG
 #include <stdlib.h>
 #include <string.h>
-
-typedef struct {
-    size_t num_children;
-    struct NODE *children;
-} CompositeNode;
-
-typedef struct {
-    int value;
-} ValueNode;
-
-typedef struct NODE {
-    char name[80];
-    int quantity;
-    int node_type; // 0 for Composite, 1 for ValueNode
-    union {
-        CompositeNode *composite_node;
-        ValueNode *value_node;
-    };
-} Node;
 
 // removes spaces, writes to input
 void remove_spaces(char input[80]) {
@@ -55,6 +35,7 @@ void tokenize_input(const char input[80]) {
         char token[80] = "";
         char curr_char = input_copy[input_idx];
         if (curr_char == '*' || curr_char == '+') {
+            // DEBUG
             printf("%c\n", curr_char);
             input_idx++;
             continue;
@@ -73,24 +54,10 @@ void tokenize_input(const char input[80]) {
                 input_idx += 1;
                 break;
             default:
+                // DEBUG
                 printf("%s\n", token);
                 input_idx += token_idx;
                 break;
         }
     }
-}
-
-int main() {
-    Node *root = NULL;
-    Node *curr = root;
-
-    while (true) {
-        char line[80] = "";
-        printf("> ");
-        fgets(line, sizeof(line), stdin);
-        line[strlen(line)-1] = '\0';
-        tokenize_input(line);
-    }
-
-    return 0;
 }

@@ -1,6 +1,6 @@
 
-src_files := main.c
-obj_files := $(patsubst %.c, obj/%.o, $(src_files))
+src_files := src/main.c src/tokenizer.c
+obj_files := $(patsubst src/%.c, obj/%.o, $(src_files))
 
 CFLAGS := -ggdb -Wall -Wextra -Wpedantic
 
@@ -9,7 +9,7 @@ CFLAGS := -ggdb -Wall -Wextra -Wpedantic
 main: $(obj_files)
 	gcc -o $@ $^ $(CFLAGS)
 
-obj/%.o: %.c | obj
+obj/%.o: src/%.c | obj
 	gcc -o $@ -c $< $(CFLAGS)
 
 obj:
