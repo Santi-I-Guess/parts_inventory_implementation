@@ -1,7 +1,10 @@
 #include <stdbool.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifdef DEBUG
+#include <stdio.h>
+#endif
 
 #include "queue.h"
 
