@@ -2,7 +2,6 @@
 #define NODE_H 1
 
 typedef struct NODE {
-    bool is_fully_defined;
     char name[80];
     int quantity;
     int node_type; // 0 for "composite", 1 for "basic"

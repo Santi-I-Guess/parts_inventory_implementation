@@ -31,18 +31,18 @@ int is_number_part(int c) {
 
 // tarray = token_array
 void append_tarray(TokenArray *token_array, char token[32]) {
-    char (*curr_token)[32] = &token_array->tokens[token_array->num_tokens];
+    char (*curr_token)[32] = &token_array->array[token_array->num_tokens];
     strcpy(*curr_token, token);
     token_array->num_tokens++;
 }
 
-TokenArray tokenize_input(const char input[80]) {
+TokenArray tokenize_line(const char line[80]) {
     TokenArray token_array = {0};
 
     size_t input_idx = 0;
-    size_t input_len = strlen(input);
+    size_t input_len = strlen(line);
     while (input_idx < input_len) {
-        char curr_char = input[input_idx];
+        char curr_char = line[input_idx];
         if (curr_char == '*' || curr_char == '+') {
             char token[32] = "";
             token[0] = curr_char;
@@ -56,7 +56,7 @@ TokenArray tokenize_input(const char input[80]) {
             is_func = &is_number_part;
 
         size_t token_len = 0;
-        while (is_func(input[input_idx+token_len])) {
+        while (is_func(line[input_idx+token_len])) {
             token_len++;
         }
 
@@ -64,7 +64,7 @@ TokenArray tokenize_input(const char input[80]) {
             input_idx += 1;
         } else {
             char token[32] = "";
-            strncpy(token, &input[input_idx], token_len);
+            strncpy(token, &line[input_idx], token_len);
             append_tarray(&token_array, token);
             input_idx += token_len;
         }
