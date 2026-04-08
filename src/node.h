@@ -9,7 +9,7 @@ typedef struct NODE {
         COMPOSITE
     } node_type;
     union {
-        int price;
+        float price;
         struct {
             int num_children;
             struct NODE **children;
