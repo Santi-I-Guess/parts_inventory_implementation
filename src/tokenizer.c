@@ -1,5 +1,5 @@
 #include <ctype.h>
-#include <stdio.h> // DEBUG
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -25,8 +25,94 @@ void remove_spaces(char input[80]) {
 }
 
 // since input can be a float, allow periods as well
-int is_number_part(int c) {
+int is_integer_char(int c) {
     return isdigit(c) || c == '.';
+}
+
+bool is_integer_token(const char token[32]) {
+    size_t token_len = strlen(token);
+    if (token_len == 0)
+        return false;
+    for (size_t i = 0; i < token_len; ++i) {
+        char curr_char = token[i];
+        if (!isdigit(curr_char)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool is_float_token(const char token[32]) {
+    bool seen_period = false;
+    size_t token_len = strlen(token);
+    if (token_len == 0)
+        return false;
+    for (size_t i = 0; i < token_len; ++i) {
+        char curr_char = token[i];
+        if (curr_char == '.' && !seen_period) {
+            seen_period = true;
+        } else if (curr_char == '.') {
+            return false;
+        } else if (!isdigit(curr_char)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool is_part_name_token(const char token[32]) {
+    size_t token_len = strlen(token);
+    if (token_len == 0)
+        return false;
+    for (size_t i = 0; i < token_len; ++i) {
+        char curr_char = token[i];
+        if (!isalpha(curr_char)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool is_composite_form(TokenArray *token_array) {
+    enum {
+        COEFFICIENT,
+        MULTIPLY,
+        NAME,
+        ADD
+    } token_state = COEFFICIENT;
+
+    // can't break out of loop inside switch, so use variable
+    bool is_valid = true;
+    for (int i = 0; i < token_array->num_tokens; ++i) {
+        if (!is_valid)
+            return false;
+
+        char (*curr_token)[32] = &token_array->array[i];
+        switch (token_state) {
+            case COEFFICIENT:
+                if (!is_integer_token(*curr_token))
+                    is_valid = false;
+                token_state = MULTIPLY;
+                break;
+            case MULTIPLY:
+                if (strlen(*curr_token) != 1 || *curr_token[0] != '*')
+                    is_valid = false;
+                token_state = NAME;
+                break;
+            case NAME:
+                if (!is_part_name_token(*curr_token))
+                    is_valid = false;
+                token_state = ADD;
+                break;
+            case ADD:
+                if (strlen(*curr_token) != 1 || *curr_token[0] != '+')
+                    is_valid = false;
+                token_state = COEFFICIENT;
+                break;
+        }
+    }
+
+    return is_valid;
 }
 
 // tarray = token_array
@@ -52,8 +138,8 @@ TokenArray tokenize_line(const char line[80]) {
         }
 
         int (*is_func)(int) = &isalpha;
-        if (is_number_part(curr_char))
-            is_func = &is_number_part;
+        if (is_integer_char(curr_char))
+            is_func = &is_integer_char;
 
         size_t token_len = 0;
         while (is_func(line[input_idx+token_len])) {

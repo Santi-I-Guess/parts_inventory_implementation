@@ -4,7 +4,10 @@
 typedef struct NODE {
     char name[80];
     int quantity;
-    int node_type; // 0 for "composite", 1 for "basic"
+    enum {
+        PRICE,
+        COMPOSITE
+    } node_type;
     union {
         int price;
         struct {

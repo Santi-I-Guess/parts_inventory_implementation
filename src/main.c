@@ -35,18 +35,39 @@ int main() {
         Node *curr_node = dequeue(&queue);
         fprintf(stderr, "what is %s?\n", curr_node->name);
 
-        TokenArray tokens = tokenize_input();
-#ifdef DEBUG
-        if (strcmp(tokens.array[0], "quit") == 0)
-            break;
-#endif
+        TokenArray input_tokens = tokenize_input();
 
 #ifdef DEBUG
-        for (int i = 0; i < tokens.num_tokens; ++i) {
-            char (*curr_token)[32] = &tokens.array[i];
-            printf("%s\n", *curr_token);
+        for (int i = 0; i < input_tokens.num_tokens; ++i) {
+            char (*curr_token)[32] = &input_tokens.array[i];
+            fprintf(stderr, "DEBUG: token \"%s\"\n", *curr_token);
         }
 #endif
+
+        if (input_tokens.num_tokens == 0) {
+            // no input
+            fprintf(stderr, "DEBUG: no input provided\n");
+        } if (input_tokens.num_tokens == 1) {
+            // check input is positive float
+            if (!is_float_token(input_tokens.array[0])) {
+                fprintf(stderr, "DEBUG: not a valid float\n");
+                break;
+            }
+        } else if (((input_tokens.num_tokens + 1) % 4) == 0) {
+            // check input in form A*part + B*part + ...
+            if (!is_composite_form(&input_tokens)) {
+                fprintf(stderr, "DEBUG: not in valid composite form\n");
+                break;
+            }
+        } else {
+            // invalid form
+            fprintf(
+                stderr,
+                "DEBUG: not in valid composite form or valid float\n"
+            );
+            break;
+        }
+
     }
 
     free_queue(&queue);
