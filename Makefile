@@ -32,6 +32,7 @@ depend:
 	rm -f sed_temp.txt
 
 # DEPENDENCIES
-obj/main.o: src/main.c src/tokenizer.h src/node.h
+obj/allocator.o: src/allocator.c src/allocator.h src/node.h
+obj/main.o: src/main.c src/allocator.h src/node.h src/queue.h src/tokenizer.h
 obj/queue.o: src/queue.c src/queue.h src/node.h
 obj/tokenizer.o: src/tokenizer.c src/tokenizer.h

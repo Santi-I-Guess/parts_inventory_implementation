@@ -12,7 +12,7 @@ typedef struct NODE {
         int price;
         struct {
             int num_children;
-            struct NODE *children;
+            struct NODE **children;
         };
     };
 } Node;

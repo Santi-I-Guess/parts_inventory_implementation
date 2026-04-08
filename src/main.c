@@ -1,5 +1,6 @@
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "allocator.h"
@@ -17,25 +18,22 @@ TokenArray tokenize_input() {
 }
 
 // prompt for root name, enqueue root node
-void setup_root_node(Node *root, Queue *queue) {
+void setup_root_node(Node *root) {
     fprintf(stderr, "what will you define?\n");
     TokenArray tokens = tokenize_input();
     strcpy(root->name, tokens.array[0]);
     root->quantity = 1;
-    enqueue(queue, root);
 }
 
-int main() {
-    NodeAllocator allocator;
-    init_allocator(&allocator);
+// define all parts with either a price or composition of parts
+void fill_in_tree(Node *root, NodeAllocator *allocator) {
+    Queue definition_queue;
+    init_queue(&definition_queue);
+    setup_root_node(root);
 
-    Node *root = alloc_new_node(&allocator);
-    Queue queue;
-    init_queue(&queue);
-
-    setup_root_node(root, &queue);
-    while (queue.count > 0) {
-        Node *curr_node = dequeue(&queue);
+    enqueue(&definition_queue, root);
+    while (definition_queue.count > 0) {
+        Node *curr_node = dequeue(&definition_queue);
         fprintf(stderr, "what is %s?\n", curr_node->name);
 
         TokenArray input_tokens = tokenize_input();
@@ -56,11 +54,35 @@ int main() {
                 fprintf(stderr, "DEBUG: not a valid float\n");
                 break;
             }
+            curr_node->node_type = PRICE;
+            curr_node->price = strtof(input_tokens.array[0], NULL);
         } else if (((input_tokens.num_tokens + 1) % 4) == 0) {
             // check input in form A*part + B*part + ...
             if (!is_composite_form(&input_tokens)) {
                 fprintf(stderr, "DEBUG: not in valid composite form\n");
                 break;
+            }
+
+            int num_children = (input_tokens.num_tokens + 1) / 4;
+            curr_node->node_type = COMPOSITE;
+            curr_node->children = calloc(num_children, sizeof(Node*));
+            curr_node->num_children = 0; // 0 for now, use as idx
+
+            for (int word_idx = 2; word_idx < input_tokens.num_tokens; word_idx += 4) {
+                // parse relevant tokens
+                char (*coefficient_token)[32] = &input_tokens.array[word_idx-2];
+                char (*word_token)[32] = &input_tokens.array[word_idx];
+                int coefficient = atoi(*coefficient_token);
+
+                // create new node, set quantity and name, add as child to curr node
+                Node *child = alloc_new_node(allocator);
+                strcpy(child->name, *word_token);
+                child->quantity = coefficient;
+
+                // add new node as child of curr_node, enqueue child
+                curr_node->children[curr_node->num_children] = child;
+                curr_node->num_children++;
+                enqueue(&definition_queue, child);
             }
         } else {
             // invalid form
@@ -70,10 +92,18 @@ int main() {
             );
             break;
         }
-
     }
 
-    free_queue(&queue);
+    free_queue(&definition_queue);
+}
+
+int main() {
+    NodeAllocator allocator;
+    init_allocator(&allocator);
+    Node *root = alloc_new_node(&allocator);
+
+    fill_in_tree(root, &allocator);
+
     free_allocator(&allocator);
     return 0;
 }

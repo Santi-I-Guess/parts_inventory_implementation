@@ -14,6 +14,13 @@ void free_allocator(NodeAllocator *allocator) {
     while (top_bucket != NULL) {
         Bucket *prev_bucket = top_bucket;
         top_bucket = top_bucket->next_bucket;
+
+        // cleanup array of children pointers per node, if any
+        for (int i = 0; i < prev_bucket->count; ++i) {
+            Node *curr_node = &prev_bucket->buffer[i];
+            if (curr_node->num_children != 0)
+                free(curr_node->children);
+        }
         free(prev_bucket);
     }
     allocator->top_bucket = NULL;
@@ -34,5 +41,6 @@ Node *alloc_new_node(NodeAllocator *allocator) {
 
     Bucket *top_bucket = allocator->top_bucket;
     Node *new_node = &top_bucket->buffer[top_bucket->count];
+    top_bucket->count++;
     return new_node;
 }
