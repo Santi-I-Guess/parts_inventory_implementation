@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "allocator.h"
 #include "node.h"
 #include "queue.h"
 #include "tokenizer.h"
@@ -25,12 +26,14 @@ void setup_root_node(Node *root, Queue *queue) {
 }
 
 int main() {
-    // no reason for root to be malloc'd
-    Node root = {0};
+    NodeAllocator allocator;
+    init_allocator(&allocator);
+
+    Node *root = alloc_new_node(&allocator);
     Queue queue;
     init_queue(&queue);
 
-    setup_root_node(&root, &queue);
+    setup_root_node(root, &queue);
     while (queue.count > 0) {
         Node *curr_node = dequeue(&queue);
         fprintf(stderr, "what is %s?\n", curr_node->name);
@@ -71,5 +74,6 @@ int main() {
     }
 
     free_queue(&queue);
+    free_allocator(&allocator);
     return 0;
 }
