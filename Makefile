@@ -34,4 +34,5 @@ depend:
 # DEPENDENCIES
 obj/allocator.o: src/allocator.c src/allocator.h src/node.h
 obj/main.o: src/main.c src/allocator.h src/node.h src/tokenizer.h
+obj/node.o: src/node.c src/node.h
 obj/tokenizer.o: src/tokenizer.c src/tokenizer.h

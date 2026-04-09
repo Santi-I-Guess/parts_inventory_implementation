@@ -17,4 +17,7 @@ typedef struct NODE {
     };
 } Node;
 
+void print_tree(Node *curr, int level);
+float get_price(Node *curr, int multiplier);
+
 #endif
